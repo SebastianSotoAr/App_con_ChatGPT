@@ -4,6 +4,9 @@ import pandas as pd
 # Título de la app
 st.title("Calculadora de PAPA")
 
+# Autor
+st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+
 # Descripción
 st.write("Esta app permite calcular el PAPA global y por tipología de asignatura. "
          "Por favor, ingresa las materias con sus respectivas calificaciones y créditos.")
