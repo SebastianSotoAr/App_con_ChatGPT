@@ -1,96 +1,89 @@
 import streamlit as st
-import numpy as np
-import pandas as pd
 import random
+import pandas as pd
 
-# Configuración inicial
-st.title("Juego: Busca Minas")
-
-# Autor
-st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+# Título de la app
+st.title("¡Busca Minas!")
 
 # Descripción
-st.write("Encuentra las casillas sin minas. ¡Cuidado con las minas!")
+st.write("Descubre las celdas sin minas. Si haces clic en una mina, pierdes. ¡Buena suerte!")
 
-# Configuración del tablero
-filas = st.sidebar.slider("Número de filas:", min_value=5, max_value=10, value=8)
-columnas = st.sidebar.slider("Número de columnas:", min_value=5, max_value=10, value=8)
-minas = st.sidebar.slider("Número de minas:", min_value=5, max_value=(filas * columnas - 1), value=10)
+# Configuración inicial
+filas = st.sidebar.slider("Número de filas:", min_value=5, max_value=15, value=8)
+columnas = st.sidebar.slider("Número de columnas:", min_value=5, max_value=15, value=8)
+minas = st.sidebar.slider("Número de minas:", min_value=5, max_value=filas * columnas - 1, value=10)
 
-# Inicialización del tablero y estado del juego
+# Crear tablero inicial
 if "tablero" not in st.session_state:
-    # Generar tablero con minas
-    tablero = np.zeros((filas, columnas), dtype=int)
-    minas_pos = random.sample(range(filas * columnas), minas)
-    for pos in minas_pos:
-        tablero[pos // columnas][pos % columnas] = -1
+    # Generar el tablero con minas
+    tablero = [[0 for _ in range(columnas)] for _ in range(filas)]
+    posiciones_minas = random.sample(range(filas * columnas), minas)
 
-    # Agregar números (cantidad de minas alrededor)
-    for i in range(filas):
-        for j in range(columnas):
-            if tablero[i][j] == -1:
+    for pos in posiciones_minas:
+        fila = pos // columnas
+        columna = pos % columnas
+        tablero[fila][columna] = -1  # -1 representa una mina
+
+    # Calcular números en las celdas
+    for fila in range(filas):
+        for columna in range(columnas):
+            if tablero[fila][columna] == -1:
                 continue
-            tablero[i][j] = sum(
-                tablero[max(0, i + di)][max(0, j + dj)] == -1
-                for di in [-1, 0, 1]
-                for dj in [-1, 0, 1]
-                if 0 <= i + di < filas and 0 <= j + dj < columnas
+            minas_cercanas = sum(
+                tablero[fila + dx][columna + dy] == -1
+                for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]
+                if 0 <= fila + dx < filas and 0 <= columna + dy < columnas
             )
+            tablero[fila][columna] = minas_cercanas
 
-    # Estado inicial del juego
-    st.session_state["tablero"] = tablero
-    st.session_state["visible"] = np.full((filas, columnas), False)
-    st.session_state["game_over"] = False
+    st.session_state.tablero = tablero
+    st.session_state.revelado = [[False for _ in range(columnas)] for _ in range(filas)]
+    st.session_state.juego_terminado = False
 
-# Función para revelar una celda
+# Función para manejar clics
 def revelar_celda(fila, columna):
-    if st.session_state["visible"][fila][columna]:
+    if st.session_state.juego_terminado or st.session_state.revelado[fila][columna]:
         return
+    st.session_state.revelado[fila][columna] = True
+    if st.session_state.tablero[fila][columna] == -1:
+        st.session_state.juego_terminado = True
+        st.error("¡Has encontrado una mina! 😢")
+    elif st.session_state.tablero[fila][columna] == 0:
+        # Revelar celdas adyacentes si no hay minas cercanas
+        for dx, dy in [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)]:
+            if 0 <= fila + dx < filas and 0 <= columna + dy < columnas:
+                revelar_celda(fila + dx, columna + dy)
 
-    st.session_state["visible"][fila][columna] = True
-
-    # Si la celda es una mina, el juego termina
-    if st.session_state["tablero"][fila][columna] == -1:
-        st.session_state["game_over"] = True
-        return
-
-    # Si la celda es un 0, revelar las celdas vecinas
-    if st.session_state["tablero"][fila][columna] == 0:
-        for di in [-1, 0, 1]:
-            for dj in [-1, 0, 1]:
-                ni, nj = fila + di, columna + dj
-                if 0 <= ni < filas and 0 <= nj < columnas:
-                    revelar_celda(ni, nj)
-
-# Mostrar el tablero en la interfaz
+# Mostrar el tablero
 st.subheader("Tablero")
-for i in range(filas):
+for fila in range(filas):
     cols = st.columns(columnas)
-    for j in range(columnas):
-        if st.session_state["visible"][i][j]:
-            if st.session_state["tablero"][i][j] == -1:
-                cols[j].button("💣", disabled=True, key=f"{i}-{j}")
+    for columna in range(columnas):
+        if st.session_state.revelado[fila][columna]:
+            if st.session_state.tablero[fila][columna] == -1:
+                cols[columna].button("💣", disabled=True)
             else:
-                cols[j].button(
-                    str(st.session_state["tablero"][i][j]) if st.session_state["tablero"][i][j] > 0 else "",
-                    disabled=True,
-                    key=f"{i}-{j}"
+                cols[columna].button(
+                    f"{st.session_state.tablero[fila][columna]}" if st.session_state.tablero[fila][columna] > 0 else "",
+                    disabled=True
                 )
         else:
-            if cols[j].button(" ", key=f"{i}-{j}"):
-                revelar_celda(i, j)
+            if cols[columna].button(" "):
+                revelar_celda(fila, columna)
 
-# Estado del juego
-if st.session_state["game_over"]:
-    st.error("💥 ¡Has perdido! Encontraste una mina.")
-    if st.button("Reiniciar juego"):
-        st.session_state.clear()
-        st.experimental_rerun()
-else:
-    # Verificar si el jugador ha ganado
-    celdas_restantes = np.sum(~st.session_state["visible"])
-    if celdas_restantes == minas:
-        st.success("🎉 ¡Felicidades! Has ganado el juego.")
-        if st.button("Reiniciar juego"):
-            st.session_state.clear()
-            st.experimental_rerun()
+# Verificar victoria
+if not st.session_state.juego_terminado:
+    celdas_no_mina = filas * columnas - minas
+    celdas_reveladas = sum(
+        1 for fila in range(filas) for columna in range(columnas) if st.session_state.revelado[fila][columna]
+    )
+    if celdas_reveladas == celdas_no_mina:
+        st.success("¡Felicidades! Has encontrado todas las celdas sin minas. 🎉")
+        st.session_state.juego_terminado = True
+
+# Reiniciar juego
+if st.button("Reiniciar juego"):
+    del st.session_state.tablero
+    del st.session_state.revelado
+    del st.session_state.juego_terminado
+    st.experimental_rerun()
