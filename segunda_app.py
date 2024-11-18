@@ -3,6 +3,9 @@ import streamlit as st
 # Título de la app
 st.title("Conversor Universal")
 
+# Autor
+st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+
 # Descripción
 st.write("Selecciona una categoría y luego el tipo de conversión que deseas realizar.")
 
