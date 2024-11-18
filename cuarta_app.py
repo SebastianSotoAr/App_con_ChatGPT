@@ -38,7 +38,7 @@ with st.form("Agregar Materia"):
         calificación = st.number_input("Calificación (0.0 - 5.0):", min_value=0.0, max_value=5.0, step=0.1)
     with col3:
         créditos = st.number_input("Créditos:", min_value=1, step=1)
-    tipología = st.selectbox("Tipología de la asignatura:", ["Obligatoria", "Electiva", "Complementaria"])
+    tipología = st.selectbox("Tipología de la asignatura:", ["Obligatoria", "Electiva", "Optativa"])
     agregar = st.form_submit_button("Agregar")
 
     if agregar and nombre and créditos > 0:
