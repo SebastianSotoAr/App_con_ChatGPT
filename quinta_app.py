@@ -5,6 +5,11 @@ import random
 
 # Configuración inicial
 st.title("Juego: Busca Minas")
+
+# Autor
+st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+
+# Descripción
 st.write("Encuentra las casillas sin minas. ¡Cuidado con las minas!")
 
 # Configuración del tablero
