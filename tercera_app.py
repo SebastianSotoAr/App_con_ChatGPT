@@ -5,6 +5,9 @@ import datetime as dt
 # Título de la app
 st.title("Registro de Finanzas Personales")
 
+# Autor
+st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+
 # Secciones principales de la app
 menu = ["Presupuesto", "Ingresos", "Gastos", "Metas de Ahorro", "Reportes"]
 opcion = st.sidebar.selectbox("Elige una sección:", menu)
