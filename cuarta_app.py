@@ -5,11 +5,16 @@ import pandas as pd
 st.title("Calculadora de PAPA")
 
 # Autor
-st.markdown('Esta app fue elaborada por Sebastián Soto Arcila.')
+st.markdown(
+  'Esta app fue elaborada por Sebastián Soto Arcila,con ayuda de ChatGPT.'
+)
 
 # Descripción
-st.write("Esta app permite calcular el PAPA global y por tipología de asignatura. "
-         "Por favor, ingresa las materias con sus respectivas calificaciones y créditos.")
+st.write(
+  "Esta app permite calcular el PAPA global y por tipología de asignatura."
+  "Por favor,\
+  ingresa las materias con sus respectivas calificaciones y créditos."
+)
 
 # Inicializar el estado de las materias
 if "materias" not in st.session_state:
@@ -35,10 +40,25 @@ with st.form("Agregar Materia"):
     with col1:
         nombre = st.text_input("Nombre de la materia:")
     with col2:
-        calificación = st.number_input("Calificación (0.0 - 5.0):", min_value=0.0, max_value=5.0, step=0.1)
+        calificación = st.number_input(
+          "Calificación (0.0 - 5.0):",
+          min_value=0.0,
+          max_value=5.0,
+          step=0.1
+        )
     with col3:
         créditos = st.number_input("Créditos:", min_value=1, step=1)
-    tipología = st.selectbox("Tipología de la asignatura:", ["Obligatoria", "Electiva", "Optativa"])
+    tipología = st.selectbox(
+        "Tipología de la asignatura:",
+        [
+          "Disciplinar Obligatoria",
+          "Disciplinar Optativa",
+          "Libre Elección",
+          "Fundamantación Obligatoria",
+          "Fundamentación Optativa",
+          "Nivelación"
+        ]
+      )
     agregar = st.form_submit_button("Agregar")
 
     if agregar and nombre and créditos > 0:
@@ -62,7 +82,8 @@ if st.session_state["materias"]:
 
     # Calcular PAPA por tipología
     st.subheader("PAPA por Tipología")
-    papa_por_tipologia = calcular_papa_por_tipologia(st.session_state["materias"])
+    papa_por_tipologia = calcular_papa_por_tipologia(
+        st.session_state["materias"])
     st.write(papa_por_tipologia)
 
     # Botón para reiniciar datos
